@@ -8,14 +8,20 @@ public class student implements Runnable {
     private boolean isGettingHelp;
     private Semaphore waitingRoom;
     private CountDownLatch latch;
+    private teachingAssistant tA;
+    private Semaphore office;
+    private Semaphore sleeping;
     
-    public student(int n, CountDownLatch latch, Semaphore waitingRoom, teachingAssistant TA){
+    public student(int n, CountDownLatch latch, Semaphore waitingRoom, teachingAssistant tA, Semaphore office, Semaphore sleeping ){
         this.studentNumber = n;
         this.isProgramming = true;
         this.isWaiting = false;
         this.isGettingHelp =false;
         this.waitingRoom = waitingRoom;
         this.latch = latch;
+        this.tA = tA;
+        this.office = office;
+        this.sleeping = sleeping;
     }
 
     public void setProgramming(boolean program){
@@ -55,18 +61,43 @@ public class student implements Runnable {
 
     }
     public void run(){
-       int waitTime = (int) ((Math.random() * 5000) + 1000);
-
+       int waitTime = (int) ((Math.random() * 20000) + 5000);
+       System.out.println("Student " + studentNumber + " is created and programming");
+       
         try{
-        do{
         Thread.sleep(waitTime);
+        do{
+
 
         if (waitingRoom.tryAcquire()){
-
+            if(sleeping.availablePermits() == 0){
+                System.out.println("Student: " + studentNumber + " is waking up TA");
+                sleeping.release();
+            }
+            // if(tA.getNap()){
+            //     System.out.println("Student: " + studentNumber + " is waking up TA");
+            //     wakeTA(tA);
+            // }
+            System.out.println("Student: " + studentNumber + " waiting for TA");
+            office.acquire();
+            waitingRoom.release();
+            tA.requestHelp(this);
+            //System.out.println("Student: " + studentNumber + " got help");
+            //setGettingHelp(true);
+            
+            
+        }else{
+            System.out.println("Waiting Room is full Student: " + studentNumber + " is going back to programming");
+            waitTime = (int) ((Math.random() *5000) + 1000);
+            Thread.sleep(waitTime);
         }
         }while(isGettingHelp == false);
-        }catch(Exception e){
+        
+    }catch(Exception e){
             e.printStackTrace();
+            return;
         }
+        System.out.println("Student: " + studentNumber + " got help and is going home");
+        latch.countDown();
     }
 }
