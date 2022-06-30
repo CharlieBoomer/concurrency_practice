@@ -55,11 +55,6 @@ public class student implements Runnable {
         return studentNumber;
     }
 
-    public void wakeTA(teachingAssistant tA){
-        tA.setNap(false);
-        tA.setHelping(true);
-
-    }
     public void run(){
        int waitTime = (int) ((Math.random() * 20000) + 5000);
        System.out.println("Student " + studentNumber + " is created and programming");
@@ -74,17 +69,11 @@ public class student implements Runnable {
                 System.out.println("Student: " + studentNumber + " is waking up TA");
                 sleeping.release();
             }
-            // if(tA.getNap()){
-            //     System.out.println("Student: " + studentNumber + " is waking up TA");
-            //     wakeTA(tA);
-            // }
+
             System.out.println("Student: " + studentNumber + " waiting for TA");
             office.acquire();
             waitingRoom.release();
             tA.requestHelp(this);
-            //System.out.println("Student: " + studentNumber + " got help");
-            //setGettingHelp(true);
-            
             
         }else{
             System.out.println("Waiting Room is full Student: " + studentNumber + " is going back to programming");
